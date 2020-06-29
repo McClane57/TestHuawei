@@ -1,0 +1,2 @@
+C:\Users\mgris\Documents\Visual Studio 2019\TestHuawei\Debug\TestHuawei.exe
+C:\Users\mgris\Documents\Visual Studio 2019\TestHuawei\Debug\TestHuawei.pdb
