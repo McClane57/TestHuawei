@@ -5,7 +5,7 @@
 #include "tOctet.h"
 #include "limits.h"
 #include "tSegment.h"
-
+#include "tTrajectory.h"
 
 
 BOOST_AUTO_TEST_SUITE(tPointTests)
@@ -413,5 +413,105 @@ BOOST_AUTO_TEST_CASE(inflate_point_test)
 	}
 }
 
+BOOST_AUTO_TEST_CASE(inflate_segment_test)
+{
+	tPoint point1(10, 4);
+	tPoint point2(1, 1);
+	tSegment segment(point1, point2);
+	tOctet octet(segment);
+	octet.Inflate(4);
+
+	BOOST_CHECK(octet.Limit(eRegDir(E)) == 14);
+	BOOST_CHECK(octet.Limit(eRegDir(NE)) == 20);
+	BOOST_CHECK(octet.Limit(eRegDir(N)) == 8);
+	BOOST_CHECK(octet.Limit(eRegDir(NW)) == 6);
+	BOOST_CHECK(octet.Limit(eRegDir(W)) == 3);
+	BOOST_CHECK(octet.Limit(eRegDir(SW)) == 4);
+	BOOST_CHECK(octet.Limit(eRegDir(S)) == 3);
+	BOOST_CHECK(octet.Limit(eRegDir(SE)) == 12);
+	octet.Inflate(-4);
+	for (auto i = 0; i < 8; ++i) {
+		BOOST_CHECK(octet.Limit(eRegDir(i)) == segment.Limit(eRegDir(i)));
+	}
+	octet.Inflate(-1);
+	BOOST_CHECK(octet.Limit(eRegDir(E)) == 9);
+	BOOST_CHECK(octet.Limit(eRegDir(NE)) == 12);
+	BOOST_CHECK(octet.Limit(eRegDir(N)) == 3);
+	BOOST_CHECK(octet.Limit(eRegDir(NW)) == -2);
+	BOOST_CHECK(octet.Limit(eRegDir(W)) == -2);
+	BOOST_CHECK(octet.Limit(eRegDir(SW)) == -4);
+	BOOST_CHECK(octet.Limit(eRegDir(S)) == -2);
+	BOOST_CHECK(octet.Limit(eRegDir(SE)) == 4);
+}
+
+BOOST_AUTO_TEST_CASE(octet_intersect_test)
+{
+	tPoint point1(10, 4);
+	tPoint point2(1, 1);
+	tSegment segment(point1, point2);
+	tOctet octet1(segment);
+
+	tPoint point3(4, 10);
+	tOctet octet2(point3);
+
+	BOOST_CHECK(octet1.Intersect(&octet2) == nullptr);
+	BOOST_CHECK(octet2.Intersect(&octet1) == nullptr);
+	BOOST_CHECK(*octet1.Intersect(&octet1) == octet1);
+	BOOST_CHECK(*octet2.Intersect(&octet2) == octet2);
+
+	octet2.Inflate(8);
+	BOOST_CHECK(*octet1.Intersect(&octet2) == tOctet({ 10,14,4,0,-2,-4,-2,6 }));
+
+	octet2.Inflate(-2);
+	BOOST_CHECK(octet1.Intersect(&octet2)->IsRegularSegment() == true);
+}
+
+
+BOOST_AUTO_TEST_CASE(cure_test)
+{
+	tOctet octet1({ 10,14,4,0,-2,-4,-2,6 });
+	octet1.Cure();
+	BOOST_CHECK(octet1 == tOctet({ 10,14,4,0,-2,-4,-2,6 }));
+
+	tOctet octet2({ 10,14,4,0,-1,-4,-2,6 });
+	octet2.Cure();
+	BOOST_CHECK(octet2 == tOctet({ 10,14,4,0,-2,-4,-2,6 }));
+
+	tOctet octet3({ 1,10,1,10,1,10,1,10 });
+	octet3.Cure();
+	BOOST_CHECK(octet3 == tOctet({ 1,2,1,2,1,2,1,2 }));
+
+	tOctet octet4({ 1,10,20,10,1,10,1,10 });
+	octet4.Cure();
+	BOOST_CHECK(octet4 == tOctet({ 1,10,10,10,1,2,1,2 }));
+
+	tOctet octet5({ 2,2,4,2,0,6,4,2 });
+	octet5.Cure();
+	BOOST_CHECK(octet5 == tOctet({ 2,2,2,2,0,2,2,2 }));
+}
 
 BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE(trajectory_test)
+
+
+BOOST_AUTO_TEST_CASE(regular_trajectory_test)
+{
+	tTrajectory trajectory1;
+	trajectory1.AddPoint(tPoint(1, 1));
+	trajectory1.AddPoint(tPoint(10, 10));
+	trajectory1.AddPoint(tPoint(10, 3));
+	BOOST_CHECK(trajectory1.IsRegular() == true);
+
+	tTrajectory trajectory2;
+	trajectory2.AddPoint(tPoint(1, 1));
+	trajectory2.AddPoint(tPoint(10, 3));
+	trajectory2.AddPoint(tPoint(10, 10));
+
+	BOOST_CHECK(trajectory2.IsRegular() == false);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+

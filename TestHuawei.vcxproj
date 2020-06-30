@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -150,12 +150,16 @@
     <ClCompile Include="tOctet.cpp" />
     <ClCompile Include="tPoint.cpp" />
     <ClCompile Include="tSegment.cpp" />
+    <ClCompile Include="tShadow.cpp" />
+    <ClCompile Include="tTrajectory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="limits.h" />
     <ClInclude Include="tOctet.h" />
     <ClInclude Include="tPoint.h" />
     <ClInclude Include="tSegment.h" />
+    <ClInclude Include="tShadow.h" />
+    <ClInclude Include="tTrajectory.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

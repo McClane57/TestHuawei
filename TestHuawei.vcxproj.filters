@@ -33,6 +33,9 @@
     <ClCompile Include="tSegment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tTrajectory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tOctet.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tSegment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tTrajectory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

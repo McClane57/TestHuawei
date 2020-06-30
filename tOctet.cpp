@@ -1,5 +1,6 @@
 #include "tOctet.h"
 #include "math.h"
+#include <cassert>
 
 tOctet& tOctet::Inflate(int difference)// if negative - deflate
 {
@@ -10,22 +11,48 @@ tOctet& tOctet::Inflate(int difference)// if negative - deflate
 		// semantic check that deflate is feasible
 		if (!IsInflateble(difference))
 		{
-			std::cout << "Is not inflateble\n";
+			assert(false && "Is not inflateble");
 			return *this;
 		}
 		for (auto i = 0; i < 8; ++i) {
 			xLimits[i] += (i%2 == 0)? difference: (difference > 0?
-				2*std::floor(difference / std::sqrt(2) + 1): -2 * std::floor(-difference / std::sqrt(2) + 1));
+				static_cast<int>(2*std::floor(difference / std::sqrt(2) + 1)): -2 * static_cast<int>(std::floor(-difference / std::sqrt(2) + 1)));
 		}
 	}
 	return *this;
 }
 
-void tOctet::xCure()
+void tOctet::Cure()
 {
+	for (auto i = 0; i < 4; ++i) {
+		assert(Limit(eRegDir(i)) + Limit(eRegDir(i + 4)) >= 0 && "empty octet");
+	}
 	for (auto i = 1; i < 8; i+=2) {
-		auto neigbour_sum = xLimits[Next(eRegDir(i))] + xLimits[Next(eRegDir(i), 1, false)];
-		xLimits[i] = xLimits[i] > neigbour_sum ? neigbour_sum : xLimits[i];
+		if (Limit(eRegDir(i)) > Limit(Next(eRegDir(i))) + Limit(Next(eRegDir(i), 1, false)))
+			xLimits[i] = Limit(Next(eRegDir(i))) + Limit(Next(eRegDir(i), 1, false));
+	}
+	for (auto i =0; i < 8; i+=2)
+	{
+		int dol = Limit(Next(eRegDir(i),1,false)) - Limit(Next(eRegDir(i)));
+		if (dol > 2 * Limit(Next(eRegDir(i),2, false)))
+		{
+			xLimits[i] = Limit(Next(eRegDir(i),2, false)) + Limit(Next(eRegDir(i)));
+			xLimits[Next(eRegDir(i),1,false)] = Limit(Next(eRegDir(i),2, false)) + Limit(eRegDir(i));
+		}
+		else
+		{
+			if (dol + 2 * Limit(Next(eRegDir(i),2)) < 0)
+			{
+				xLimits[i] = Limit(Next(eRegDir(i),2)) + Limit(Next(eRegDir(i),1,false));
+				xLimits[Next(eRegDir(i))] = Limit(Next(eRegDir(i),2)) + Limit(eRegDir(i));
+			}
+			else
+			{
+				int ml = Limit(Next(eRegDir(i), 1, false)) + Limit(Next(eRegDir(i)));
+				if (2*xLimits[i] > ml)
+					xLimits[i] = static_cast<int>(ml/2);
+			}
+		}
 	}
 }
 
@@ -62,8 +89,21 @@ void tOctet::xNeighbourCommonPoint(eRegDir dir1, eRegDir dir2, tPoint& result)
 		result = tPoint(xLimits[dir2], xLimits[dir2] - xLimits[dir1]);
 		return;
 	default:
+		assert(false && "Bad Dir");
 		return;
 	}
+}
+
+tOctet tOctet::operator=(tOctet const& second)
+{
+	if (second == *this) 
+		return *this;
+	else {
+		for (auto i = 0; i < 8; ++i) {
+			xLimits[i] = second.Limit(eRegDir(i));
+		}
+	}
+	return *this;
 }
 
 void tOctet::CoverPoint(const tPoint& point)
@@ -71,7 +111,7 @@ void tOctet::CoverPoint(const tPoint& point)
 	for (auto i = 0; i < 8; ++i) {
 		xLimits[i] = point.Limit(eRegDir(i)) > xLimits[i] ? point.Limit(eRegDir(i)) : xLimits[i];
 	}
-	xCure();
+	Cure();
 }
 
 int tOctet::IsInside(const tPoint& point) const
@@ -114,18 +154,23 @@ bool tOctet::CommonPoint(eRegDir dir1, eRegDir dir2, tPoint& result)
 
 tPoint tOctet::Vertex(eRegDir dir)
 {
-	xCure();
+	Cure();
 	tPoint result;
 	xNeighbourCommonPoint(dir, Next(dir), result);
 	return result;
 }
 
 bool tOctet::IsInflateble(int difference) const {
-/*	if (difference >= 0) return true;
+    if (difference >= 0) return true;
 	for (auto i = 0; i < 4; ++i) {
-		bool sides_inflatable = i % 2 == 0 ? Limit(eRegDir(i)) - Limit(Opposite(eRegDir(i))) >= -2 * difference:
-
-	}*/
+		bool sides_inflatable;
+		if (i % 2 == 0)
+			sides_inflatable = Limit(eRegDir(i)) + Limit(OppositeDirection(eRegDir(i))) >= -2 * difference;
+		else
+			sides_inflatable = Limit(eRegDir(i)) + Limit(OppositeDirection(eRegDir(i))) >= 2 * std::floor(-difference / std::sqrt(2) + 1);
+		if (!sides_inflatable)
+			return false;
+	}
 	return true;
 }
 
@@ -152,6 +197,39 @@ bool tOctet::IsRegularSegment()
 		}
 	}
 	return false;
+}
+
+bool tOctet::HasIntersection(const tOctet* second) const
+{
+	for (auto i = 0; i < 8; ++i) {
+		if (this->Limit(eRegDir(i)) + second->Limit(OppositeDirection(eRegDir(i))) < 0)
+			return false;
+	}
+	return true;
+}
+
+std::shared_ptr<tOctet> tOctet::Intersect(const tOctet* second) const
+{
+	bool intersect = HasIntersection(second);
+	if (!intersect)
+		return nullptr;
+	std::array<int, 8> limits;
+	for (auto i = 0; i < 8; ++i) {
+		limits[i] = this->Limit(eRegDir(i)) > second->Limit(eRegDir(i)) ? second->Limit(eRegDir(i)) : this->Limit(eRegDir(i));
+	}
+	std::shared_ptr<tOctet> intersection(new tOctet(limits));
+	intersection->Cure();
+	return intersection;
+}
+
+bool operator==(tOctet const& first, tOctet const& second)
+{
+	for (auto i = 0; i < 8; ++i) {
+		if (first.Limit(eRegDir(i)) != second.Limit(eRegDir(i))) {
+			return false;
+		}
+	}
+	return true;
 }
 
 std::ostream& operator<<(std::ostream& os, const tOctet& octet)
