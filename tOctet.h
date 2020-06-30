@@ -2,6 +2,7 @@
 #include "tPoint.h"
 #include "tSegment.h"
 #include <array>
+#include <memory>
 
 class tOctet
 {

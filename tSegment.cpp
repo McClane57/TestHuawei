@@ -3,6 +3,7 @@
 
 std::pair<eRegDir, eRegDir> DirectionsOfSegment(long long diff_x, long long diff_y)
 {
+	auto result = std::make_pair<eRegDir, eRegDir>(N, N);
 	if (diff_x == 0){
 		if (diff_y > 0){
 			return std::make_pair<eRegDir, eRegDir>(N, N);
@@ -22,33 +23,35 @@ std::pair<eRegDir, eRegDir> DirectionsOfSegment(long long diff_x, long long diff
 	else if (diff_x > 0) {
 		if (diff_y > 0){
 			if (diff_x == diff_y){
-				return std::make_pair<eRegDir, eRegDir>(NE, NE);
+				result =  std::make_pair<eRegDir, eRegDir>(NE, NE);
 			}
 			else if (diff_x > diff_y){
-				return std::make_pair<eRegDir, eRegDir>(E, NE);
+				result =  std::make_pair<eRegDir, eRegDir>(E, NE);
 			}
 			else{
-				return std::make_pair<eRegDir, eRegDir>(NE,N);
+				result =  std::make_pair<eRegDir, eRegDir>(NE,N);
 			}
 		}
 		else if (diff_y < 0) {
 			auto directions = DirectionsOfSegment(diff_x, -diff_y);
-			return std::make_pair<eRegDir, eRegDir>(NegativeDirection(directions.second), NegativeDirection(directions.first));
+			result =  std::make_pair<eRegDir, eRegDir>(NegativeDirection(directions.second), NegativeDirection(directions.first));
 		}
 	}
 	else if (diff_x < 0) {
 		if (diff_y > 0) {
 			auto directions = DirectionsOfSegment(-diff_x, -diff_y);
-			return std::make_pair<eRegDir, eRegDir>(OppositeDirection(directions.second), 
-				OppositeDirection(directions.first));
+			result =  std::make_pair<eRegDir, eRegDir>(OppositeDirection(directions.first),
+				OppositeDirection(directions.second));
 		}
 		else if (diff_y < 0) {
 			auto directions = DirectionsOfSegment(-diff_x, -diff_y);
-			return std::make_pair<eRegDir, eRegDir>(OppositeDirection(directions.first),
+			result =  std::make_pair<eRegDir, eRegDir>(OppositeDirection(directions.first),
 				OppositeDirection(directions.second));
 		}
 	}
-	return std::make_pair<eRegDir, eRegDir>(N, S); //if the start and end points are the same
+	assert((result.second == Next(result.first) ||
+		result.second == result.first) && "bad directions");
+	return result;
 }
 
 void tSegment::xCheck()

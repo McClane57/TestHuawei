@@ -1,10 +1,2 @@
-﻿  limits.cpp
-  Test.cpp
-  TestHuawei.cpp
-  tOctet.cpp
-  tPoint.cpp
-  tSegment.cpp
-  tShadow.cpp
-  tTrajectory.cpp
-  Generating Code...
+﻿  tShadow.cpp
   TestHuawei.vcxproj -> C:\Users\mgris\Documents\Visual Studio 2019\git\TestHuawei\x64\Debug\TestHuawei.exe

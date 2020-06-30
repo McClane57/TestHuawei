@@ -6,6 +6,7 @@
 #include "limits.h"
 #include "tSegment.h"
 #include "tTrajectory.h"
+#include "tShadow.h"
 
 
 BOOST_AUTO_TEST_SUITE(tPointTests)
@@ -119,6 +120,17 @@ BOOST_AUTO_TEST_CASE(regularity_test)
 	BOOST_CHECK(segment3.IsRegular() == false);
 }
 
+BOOST_AUTO_TEST_CASE(swap_test)
+{
+	tPoint start1(20, -30);
+	tPoint finish1(50, -60);
+
+	tSegment segment1(start1, finish1);
+	segment1.SwapEnds();
+	BOOST_CHECK(segment1.End(0) == finish1);
+	BOOST_CHECK(segment1.End(1) == start1);
+}
+
 BOOST_AUTO_TEST_CASE(directions_test)
 {
 	tPoint start1(20, -30);
@@ -162,8 +174,8 @@ BOOST_AUTO_TEST_CASE(directions_test)
 
 
 	tSegment segment6(start6, finish6);
-	BOOST_CHECK(segment6.Directions().first == NW);
-	BOOST_CHECK(segment6.Directions().second == N);
+	BOOST_CHECK(segment6.Directions().first == N);
+	BOOST_CHECK(segment6.Directions().second == NW);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -493,7 +505,7 @@ BOOST_AUTO_TEST_CASE(cure_test)
 BOOST_AUTO_TEST_SUITE_END()
 
 
-BOOST_AUTO_TEST_SUITE(trajectory_test)
+BOOST_AUTO_TEST_SUITE(trajectory_tests)
 
 
 BOOST_AUTO_TEST_CASE(regular_trajectory_test)
@@ -514,4 +526,36 @@ BOOST_AUTO_TEST_CASE(regular_trajectory_test)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE(shadow_tests)
 
+BOOST_AUTO_TEST_CASE(shadow_fill)
+{
+	tShadow shadow0;
+	tShadow shadow1(NE, S, tPoint(10, 0));
+	shadow0 = shadow1;
+	bool added = shadow0.AddObstacle(tOctet(tPoint(4, 2)));
+	BOOST_CHECK(added);
+	BOOST_CHECK(shadow0.Map().size() == 2);
+	added = shadow0.AddObstacle(tOctet(tPoint(4, 2)));
+	BOOST_CHECK(!added);
+	added = shadow0.AddObstacle(tOctet(tPoint(3, 2)));
+	BOOST_CHECK(!added);
+	added = shadow0.AddObstacle(tOctet(tPoint(3, 3)));
+	BOOST_CHECK(added);
+	BOOST_CHECK(shadow0.Map().size() == 2);
+
+
+	added = shadow0.AddObstacle(tOctet(tPoint(1, 4)));
+	BOOST_CHECK(added);
+	BOOST_CHECK(shadow0.Map().size() == 3);
+
+	added = shadow0.AddObstacle(tOctet(tPoint(0, 4)));
+	BOOST_CHECK(!added);
+	BOOST_CHECK(shadow0.Map().size() == 3);
+
+	added = shadow0.AddObstacle(tOctet(tPoint(9, 4)));
+	BOOST_CHECK(added);
+	BOOST_CHECK(shadow0.Map().size() == 2);
+}
+
+BOOST_AUTO_TEST_SUITE_END()
