@@ -640,5 +640,16 @@ BOOST_AUTO_TEST_CASE(trajectory_builder_one_obstacle_test)
 	BOOST_CHECK(ladder2.MakeLadder() == tTrajectory({ tPoint(0,0), tPoint(2,0), tPoint(5, 3), tPoint(7,3),  tPoint(10, 6) }));
 }
 
+BOOST_AUTO_TEST_CASE(trajectory_builder_few_obstacles_test)
+{
+	tSegment diagonal1(tPoint(10, 0), tPoint(0, 5));
+	tLadder ladder1(diagonal1);
+	ladder1.AddObstacle(tOctet(tPoint(4, 2)));
+	ladder1.AddObstacle(tOctet(tPoint(7, 1)));
+	BOOST_CHECK(ladder1.MakeLadder() == tTrajectory({ tPoint(0,5), tPoint(3,2), tPoint(6,2), tPoint(8, 0), tPoint(10, 0) }));
+	ladder1.AddObstacle(tOctet(tPoint(8, 1)));
+	BOOST_CHECK(ladder1.MakeLadder() == tTrajectory({ tPoint(0,5), tPoint(3,2), tPoint(6,2), tPoint(7, 1), tPoint(8,1), tPoint(9,0), tPoint(10, 0) }));
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
