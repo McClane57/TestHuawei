@@ -18,3 +18,16 @@ bool tTrajectory::IsRegular()
 	}
 	return true;
 }
+
+bool tTrajectory::operator==(tTrajectory const& other) const
+{
+	if (xTrajectory.size() != other.Trajectory().size())
+		return false;
+
+	for (auto iter = xTrajectory.begin(), jter = other.Trajectory().begin(); iter != xTrajectory.end(); ++iter, ++jter) {
+		if (!(*iter == *jter)) {
+			return false;
+		}
+	}
+	return true;
+}

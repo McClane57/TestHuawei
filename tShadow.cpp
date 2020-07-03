@@ -3,12 +3,49 @@
 
 void tLadder::xInit()
 {
-	if (xDiagonal.End(0).y > xDiagonal.End(1).y) {
+	if (xDiagonal.End(0).x > xDiagonal.End(1).x) {
 		xDiagonal.SwapEnds();
 	}
 	xDirections = xDiagonal.Directions();
 	assert(!(xDirections.first == xDirections.second) && "bad segment for ladder");
-	xShadow = tShadow(xDirections.second, xDirections.first, xDiagonal.End(1));
+	xShadow = tShadow(Next(xDirections.second), Next(xDirections.first,1,false), xDiagonal.End(1));
+}
+
+tPoint tLadder::LastPointUnderDiagonal(tPoint const& start) const
+{
+	auto lim1_start = xDiagonal.End(0).Limit(Next(xDirections.first,1,false));
+	auto lim1_finish = xDiagonal.End(1).Limit(Next(xDirections.first, 1, false));
+	auto lim1_current = start.Limit(Next(xDirections.first, 1, false));
+
+	auto lim2_start = xDiagonal.End(0).Limit(xDirections.second);
+	auto lim2_finish = xDiagonal.End(1).Limit(xDirections.second);
+	auto lim2_current = start.Limit(xDirections.second);
+
+	auto lim2_new = static_cast<int>
+		(std::floor(static_cast<long long>(lim2_finish - lim2_start) * (lim1_current - lim1_start) /
+			(lim1_finish - lim1_start)));
+	int shift = lim2_new - lim2_current;
+	if (xDirections.second % 2) {
+		if (shift % 2) {
+			shift -= 1;
+		}
+	}
+	tSegment segment(start, xDirections.second, shift);
+
+	return segment.End(1);
+}
+
+tTrajectory tLadder::MakeLadder() const
+{
+	tTrajectory result(xDiagonal.End(0));
+	while (!(result.Trajectory().back() == xDiagonal.End(1))) {
+		result.AddPoint(xShadow.NextPoint(result.Trajectory().back()));
+		result.AddPoint(LastPointUnderDiagonal(result.Trajectory().back()));
+	}
+	assert(result.Trajectory().front() == xDiagonal.End(0) && "bad trajectory start");
+	assert(result.Trajectory().back() == xDiagonal.End(1) && "bad trajectory end");
+	assert(result.IsRegular() && "bad trajectory");
+	return result;
 }
 
 
@@ -75,10 +112,23 @@ bool tShadow::AddObstacle(tOctet const& octet)
 	return false;
 }
 
-int tShadow::ReturnLimit(tPoint const& point) const
+tPoint tShadow::NextPoint(tPoint const& start) const
+{
+	auto newLimit = xReturnLimit(start);
+	auto startLimit = start.Limit(xValueDir);
+	auto diff = newLimit - startLimit;
+	assert(diff > 0);
+	if (xValueDir % 2 == 0) {
+		diff *= 2;
+	}
+	tSegment segment(start, Next(xValueDir), diff);
+	return segment.End(1);
+}
+
+int tShadow::xReturnLimit(tPoint const& point) const
 {
 	auto iter = xMap.lower_bound(point.Limit(xKeyDir));
-	if (iter->first < point.Limit(xKeyDir))
+	if (iter->first <= point.Limit(xKeyDir))
 		++iter;
 	assert(iter != xMap.end());
 	return iter->second;

@@ -16,6 +16,7 @@ private:
 	bool xChecked = false;
 	void xCheck();
 public:
+	tSegment(tPoint const& start, eRegDir dir, int limit);
 	tSegment(tPoint const& s, tPoint const& f) : xStart(s), xFinish(f) { assert(!(xStart == xFinish) && "Bad segment"); }
 	tSegment(tSegment const& other) :xStart(other.End(0)), xFinish(other.End(1)) {}
 	tPoint const& End(int end) const { return end ? xFinish : xStart; }

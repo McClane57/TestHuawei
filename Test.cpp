@@ -99,6 +99,19 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(tSegment_test)
 
+BOOST_AUTO_TEST_CASE(directional_segment_test)
+{
+	tPoint start(10, 10);
+	BOOST_CHECK(tSegment(start, E, 10).End(1) == tPoint(20, 10));
+	BOOST_CHECK(tSegment(start, NE, 10).End(1) == tPoint(15, 15));
+	BOOST_CHECK(tSegment(start, N, 10).End(1) == tPoint(10, 20));
+	BOOST_CHECK(tSegment(start, NW, 10).End(1) == tPoint(5, 15));
+	BOOST_CHECK(tSegment(start, W, 10).End(1) == tPoint(0, 10));
+	BOOST_CHECK(tSegment(start, SW, 10).End(1) == tPoint(5, 5));
+	BOOST_CHECK(tSegment(start, S, 10).End(1) == tPoint(10, 0));
+	BOOST_CHECK(tSegment(start, SE, 10).End(1) == tPoint(15, 5));
+}
+
 BOOST_AUTO_TEST_CASE(regularity_test)
 {
 	tPoint start1(20, -30);
@@ -557,5 +570,75 @@ BOOST_AUTO_TEST_CASE(shadow_fill)
 	BOOST_CHECK(added);
 	BOOST_CHECK(shadow0.Map().size() == 2);
 }
+
+BOOST_AUTO_TEST_CASE(shadow_point_diagonal_test)
+{
+	tShadow shadow(NE, S, tPoint(20, 0));
+	shadow.AddObstacle(tOctet(tPoint(3, 8)));
+	shadow.AddObstacle(tOctet(tPoint(15, 2)));
+	shadow.AddObstacle(tOctet(tPoint(10, 5)));
+	BOOST_CHECK(shadow.Map().size() == 4);
+	BOOST_CHECK(shadow.NextPoint(tPoint(0, 10)) == tPoint(2, 8));
+	BOOST_CHECK(shadow.NextPoint(tPoint(1, 10)) == tPoint(6, 5));
+	BOOST_CHECK(shadow.NextPoint(tPoint(0, 18)) == tPoint(18, 0));
+}
+
+BOOST_AUTO_TEST_CASE(shadow_point_orthogonal_test)
+{
+	tShadow shadow(E, SW, tPoint(20, 0));
+	shadow.AddObstacle(tOctet(tPoint(17, 4)));
+	shadow.AddObstacle(tOctet(tPoint(16, 6)));
+	shadow.AddObstacle(tOctet(tPoint(15, 8)));
+	BOOST_CHECK(shadow.Map().size() == 4);
+	BOOST_CHECK(shadow.NextPoint(tPoint(13,13)) == tPoint(13,10));
+	BOOST_CHECK(shadow.NextPoint(tPoint(15, 10)) == tPoint(15, 7));
+	BOOST_CHECK(shadow.NextPoint(tPoint(18, 5)) == tPoint(18, 2));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(ladder_tests)
+
+BOOST_AUTO_TEST_CASE(under_segment_test)
+{
+	tSegment diagonal1(tPoint(10, 0), tPoint(0, 5));
+	tLadder ladder1(diagonal1);
+	BOOST_CHECK(ladder1.LastPointUnderDiagonal(tPoint(3, 2)) == tPoint(6, 2));
+	BOOST_CHECK(ladder1.LastPointUnderDiagonal(tPoint(2, 2)) == tPoint(6, 2));
+	BOOST_CHECK(ladder1.LastPointUnderDiagonal(tPoint(0, 0)) == tPoint(10, 0));
+
+
+
+	tSegment diagonal2(tPoint(0, 0), tPoint(10, 6));
+	tLadder ladder2(diagonal2);
+	BOOST_CHECK(ladder2.LastPointUnderDiagonal(tPoint(3, 1)) == tPoint(5, 3));
+	BOOST_CHECK(ladder2.LastPointUnderDiagonal(tPoint(5, 1)) == tPoint(10, 6));
+	BOOST_CHECK(ladder2.LastPointUnderDiagonal(tPoint(3, 0)) == tPoint(7, 4));
+}
+
+BOOST_AUTO_TEST_CASE(trajectory_builder_no_obstacles_test)
+{
+	tSegment diagonal1(tPoint(10, 0), tPoint(0, 5));
+	tLadder ladder1(diagonal1);
+	BOOST_CHECK(ladder1.MakeLadder() == tTrajectory({tPoint(0,5), tPoint(5, 0), tPoint(10, 0)}));
+
+	tSegment diagonal2(tPoint(0, 0), tPoint(10, 6));
+	tLadder ladder2(diagonal2);
+	BOOST_CHECK(ladder2.MakeLadder() == tTrajectory({ tPoint(0,0), tPoint(4, 0), tPoint(10, 6) }));
+}
+
+BOOST_AUTO_TEST_CASE(trajectory_builder_one_obstacle_test)
+{
+	tSegment diagonal1(tPoint(10, 0), tPoint(0, 5));
+	tLadder ladder1(diagonal1);
+	ladder1.AddObstacle(tOctet(tPoint(4, 2)));
+	BOOST_CHECK(ladder1.MakeLadder() == tTrajectory({ tPoint(0,5), tPoint(3,2), tPoint(6,2), tPoint(8, 0), tPoint(10, 0) }));
+
+	tSegment diagonal2(tPoint(0, 0), tPoint(10, 6));
+	tLadder ladder2(diagonal2);
+	ladder2.AddObstacle(tOctet(tPoint(5,3)));
+	BOOST_CHECK(ladder2.MakeLadder() == tTrajectory({ tPoint(0,0), tPoint(2,0), tPoint(5, 3), tPoint(7,3),  tPoint(10, 6) }));
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()

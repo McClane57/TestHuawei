@@ -62,6 +62,43 @@ void tSegment::xCheck()
 	xRegular = (xDirections.first == xDirections.second);
 }
 
+tSegment::tSegment(tPoint const& start, eRegDir dir, int limit)
+{
+	xStart = start;
+	switch (dir) {
+	case E:
+		xFinish = tPoint(start.x + limit, start.y);
+		return;
+	case NE:
+		assert(limit % 2 == 0 && "bad diagonal limit");
+		xFinish = tPoint(start.x + static_cast<int>(limit/2), start.y + static_cast<int>(limit / 2));
+		return;
+	case N:
+		xFinish = tPoint(start.x, start.y+ limit);
+		return;
+	case NW:
+		assert(limit % 2 == 0 && "bad diagonal limit");
+		xFinish = tPoint(start.x - static_cast<int>(limit / 2), start.y + static_cast<int>(limit / 2));
+		return;
+	case W:
+		xFinish = tPoint(start.x - limit, start.y);
+		return;
+	case SW:
+		assert(limit % 2 == 0 && "bad diagonal limit");
+		xFinish = tPoint(start.x - static_cast<int>(limit / 2), start.y - static_cast<int>(limit / 2));
+		return;
+	case S:
+		xFinish = tPoint(start.x, start.y - limit);
+		return;
+	case SE:
+		assert(limit % 2 == 0 && "bad diagonal limit");
+		xFinish = tPoint(start.x + static_cast<int>(limit / 2), start.y - static_cast<int>(limit / 2));
+		return;
+	default:
+		assert(true && "bad dir");
+	}
+}
+
 bool tSegment::IsRegular()
 {
 	if (xChecked) {

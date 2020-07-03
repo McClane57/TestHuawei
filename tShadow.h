@@ -3,6 +3,7 @@
 #include "tPoint.h"
 #include "tSegment.h"
 #include "tOctet.h"
+#include "tTrajectory.h"
 
 class tShadow
 {
@@ -12,13 +13,14 @@ private:
 	eRegDir xKeyDir;
 	std::map<int, int>::const_iterator xIfAddable(int key, int val) const;
 	void xRemoveExtra(int inserted_key);
+	int xReturnLimit(tPoint const& point) const;
 public:
 	tShadow(): xValueDir(E), xKeyDir(E) {}
 	tShadow(eRegDir key, eRegDir value, tPoint const & end);
 	tShadow operator = (tShadow const& shadow);
 
 	bool AddObstacle(tOctet const& octet);
-	int ReturnLimit(tPoint const& point) const;
+	tPoint NextPoint(tPoint const& start) const;
 	std::map<int, int> const& Map() const { return xMap; }
 };
 
@@ -30,6 +32,10 @@ private:
 	std::pair<eRegDir, eRegDir> xDirections;
 	void xInit();
 public:
+	tLadder(tSegment const& segment) : xDiagonal(segment) { xInit(); }
 	tLadder(tPoint start, tPoint end) : xDiagonal(start, end) { xInit(); }
+	void AddObstacle(tOctet const& octet) { xShadow.AddObstacle(octet); }
+	tPoint LastPointUnderDiagonal(tPoint const& start) const;
+	tTrajectory MakeLadder() const;
 };
 

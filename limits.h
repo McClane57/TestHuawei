@@ -20,3 +20,5 @@ inline eRegDir OrthogonalDirection(eRegDir current, bool clockwise = true) { ret
 inline eRegDir NegativeDirection(eRegDir current) { return eRegDir((8 - current) % 8); }
 
 inline bool NeighbourDirections(eRegDir dir1, eRegDir dir2) { return (dir1 == Next(dir2)) || (dir2 == Next(dir1)); }
+
+
