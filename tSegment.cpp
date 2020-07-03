@@ -1,5 +1,8 @@
 #include "tSegment.h"
 #include <cassert>
+#include <boost/multiprecision/cpp_int.hpp>
+
+typedef boost::multiprecision::int128_t tInt128;
 
 std::pair<eRegDir, eRegDir> DirectionsOfSegment(long long diff_x, long long diff_y)
 {
@@ -62,9 +65,8 @@ void tSegment::xCheck()
 	xRegular = (xDirections.first == xDirections.second);
 }
 
-tSegment::tSegment(tPoint const& start, eRegDir dir, int limit)
+tSegment::tSegment(tPoint const& start, eRegDir dir, int limit, int width):xWidth(width), xStart(start)
 {
-	xStart = start;
 	switch (dir) {
 	case E:
 		xFinish = tPoint(start.x + limit, start.y);
@@ -127,4 +129,48 @@ int tSegment::Limit(eRegDir dir) const
 	auto lim_f = xFinish.Limit(dir);
 
 	return lim_s > lim_f ? lim_s : lim_f;
+}
+
+void tSegment::SwapEnds()
+{
+	std::swap(xStart, xFinish);
+	xChecked = false;
+}
+
+int tSegment::IsAlign(tSegment const& other) const
+{
+	auto p1 = IsPointOnLine(other.End(0));
+	auto p2 = IsPointOnLine(other.End(1));
+	if (p1 == 0)
+		return p2;
+	if (p2 == 0)
+		return p1;
+	if (p1 == p2)
+		return p2;
+	else
+		return -other.IsAlign(*this);
+}
+
+int tSegment::IsPointOnLine(tPoint const& point) const
+{
+	tInt128 signedArea = (static_cast<tInt128>(point.x) - End(0).x) * 
+		(static_cast<tInt128>(End(1).y) - point.y) - 
+		(static_cast<tInt128>(point.y) - End(0).y) * 
+		(static_cast<tInt128>(End(1).x) - point.x);
+	if (signedArea == static_cast < tInt128>(0)) {
+		return 0;
+	}
+	return (signedArea > static_cast < tInt128>(0)) ? -1 : 1;
+}
+
+
+bool Less(tSegment const& first, tSegment const& second)
+{
+	auto align = first.IsAlign(second);
+	if (align == 0) {
+		if (first.End(0).y != second.End(0).y)
+			return (first.End(0).y < second.End(0).y);
+		return (first.End(0).x < second.End(0).x);
+	}
+	return (align == 1);
 }

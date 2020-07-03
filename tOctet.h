@@ -31,6 +31,7 @@ public:
 		xLimits{ segment.Limit(E), segment.Limit(NE), segment.Limit(N), segment.Limit(NW), segment.Limit(W), segment.Limit(SW), segment.Limit(S), segment.Limit(SE) }
 	{
 		Cure();
+		Inflate(segment.Width());
 	}
 
 	tOctet operator = (tOctet const& second);

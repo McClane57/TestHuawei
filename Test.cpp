@@ -191,6 +191,32 @@ BOOST_AUTO_TEST_CASE(directions_test)
 	BOOST_CHECK(segment6.Directions().second == NW);
 }
 
+BOOST_AUTO_TEST_CASE(align_critical_test)
+{
+	tSegment segment1(tPoint(0, 0), tPoint(INT32_MAX, 1));
+	BOOST_CHECK(segment1.IsPointOnLine(tPoint(INT32_MIN, -1)) == 1);
+	BOOST_CHECK(segment1.IsPointOnLine(tPoint(INT32_MIN + 1, -1)) == 0);
+	BOOST_CHECK(segment1.IsPointOnLine(tPoint(INT32_MIN + 1000, -1)) == -1);
+}
+
+BOOST_AUTO_TEST_CASE(segment_align_test)
+{
+	tSegment segment1(tPoint(0, 0), tPoint(10, 1));
+	tSegment segment2(tPoint(-21, -2), tPoint(-11, -1));
+	tSegment segment3(tPoint(-22, -2), tPoint(-11, -1));
+	tSegment segment4(tPoint(-20, -2), tPoint(-10, -1));
+	tSegment segment5(tPoint(-18, -2), tPoint(-9, -1));
+
+
+
+	BOOST_CHECK(segment1.IsAlign(segment2) == 1);
+	BOOST_CHECK(segment1.IsAlign(segment3) == 1);
+	BOOST_CHECK(segment1.IsAlign(segment4) == 0);
+	BOOST_CHECK(segment1.IsAlign(segment5) == -1);
+}
+
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(Octet_tests)
@@ -237,6 +263,19 @@ BOOST_AUTO_TEST_CASE(constructor_test)
 	BOOST_CHECK(octet4.Limit(SW) == -2);
 	BOOST_CHECK(octet4.Limit(S) == -1);
 	BOOST_CHECK(octet4.Limit(SE) == 6);
+
+	tPoint point1(10, 4);
+	tPoint point2(1, 1);
+	tSegment segment2(point1, point2, 4);
+	tOctet octet5(segment2);
+	BOOST_CHECK(octet5.Limit(eRegDir(E)) == 14);
+	BOOST_CHECK(octet5.Limit(eRegDir(NE)) == 20);
+	BOOST_CHECK(octet5.Limit(eRegDir(N)) == 8);
+	BOOST_CHECK(octet5.Limit(eRegDir(NW)) == 6);
+	BOOST_CHECK(octet5.Limit(eRegDir(W)) == 3);
+	BOOST_CHECK(octet5.Limit(eRegDir(SW)) == 4);
+	BOOST_CHECK(octet5.Limit(eRegDir(S)) == 3);
+	BOOST_CHECK(octet5.Limit(eRegDir(SE)) == 12);
 }					 
 
 BOOST_AUTO_TEST_CASE(cover_point)
