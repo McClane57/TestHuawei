@@ -1,6 +1,7 @@
 #include "tSegment.h"
 #include <cassert>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <algorithm>
 
 typedef boost::multiprecision::int128_t tInt128;
 
@@ -101,6 +102,13 @@ tSegment::tSegment(tPoint const& start, eRegDir dir, int limit, int width):xWidt
 	}
 }
 
+bool tSegment::operator==(tSegment const& other)
+{
+	if (End(0) == other.End(0) && End(1) == other.End(1))
+		return true;
+	return (End(1) == other.End(0) && End(0) == other.End(1));
+}
+
 bool tSegment::IsRegular()
 {
 	if (xChecked) {
@@ -173,4 +181,15 @@ bool Less(tSegment const& first, tSegment const& second)
 		return (first.End(0).x < second.End(0).x);
 	}
 	return (align == 1);
+}
+
+void SortSegments(std::list<tSegment>& segments)
+{
+	for (auto& seg : segments) {
+		if (seg.End(0).x > seg.End(1).x)
+			seg.SwapEnds();
+		else if ((seg.End(0).x == seg.End(1).x) && (seg.End(0).y > seg.End(1).y))
+			seg.SwapEnds();
+	}
+	segments.sort(Less);
 }

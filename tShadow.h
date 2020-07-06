@@ -29,13 +29,22 @@ class tLadder
 private:
 	tShadow xShadow;
 	tSegment xDiagonal;
+	tOctet xFrame;
 	std::pair<eRegDir, eRegDir> xDirections;
 	void xInit();
 public:
-	tLadder(tSegment const& segment) : xDiagonal(segment) { xInit(); }
-	tLadder(tPoint start, tPoint end) : xDiagonal(start, end) { xInit(); }
-	void AddObstacle(tOctet const& octet) { xShadow.AddObstacle(octet); }
+	tLadder(tSegment const& segment) : xDiagonal(segment), xFrame(segment) { xInit(); }
+	tLadder(tPoint start, tPoint end) : xDiagonal(start, end), xFrame(xDiagonal) { xInit(); }
+	void AddObstacle(tOctet const& octet);
 	tPoint LastPointUnderDiagonal(tPoint const& start) const;
 	tTrajectory MakeLadder() const;
+};
+
+class tExtendedLadder {
+private:
+	std::list<tSegment> xSegments;
+	std::list<tOctet> xObstacles;
+public:
+	tExtendedLadder(std::list<tSegment> const& segments, std::list<tOctet> const& obstacles) : xSegments(segments), xObstacles(obstacles) {}
 };
 

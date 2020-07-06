@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(shadow_tests)
 
-BOOST_AUTO_TEST_CASE(shadow_fill)
+BOOST_AUTO_TEST_CASE(shadow_fill_test)
 {
 	tShadow shadow0;
 	tShadow shadow1(NE, S, tPoint(10, 0));
@@ -690,5 +690,26 @@ BOOST_AUTO_TEST_CASE(trajectory_builder_few_obstacles_test)
 	BOOST_CHECK(ladder1.MakeLadder() == tTrajectory({ tPoint(0,5), tPoint(3,2), tPoint(6,2), tPoint(7, 1), tPoint(8,1), tPoint(9,0), tPoint(10, 0) }));
 }
 
+BOOST_AUTO_TEST_CASE(trajectory_builder_bad_obstacle_test)
+{
+	tSegment diagonal1(tPoint(10, 0), tPoint(0, 5));
+	tLadder ladder1(diagonal1);
+	ladder1.AddObstacle(tOctet(tPoint(5, 3)));
+	BOOST_CHECK(ladder1.MakeLadder() == tTrajectory({ tPoint(0,5), tPoint(5, 0), tPoint(10, 0) }));
+	ladder1.AddObstacle(tOctet(tPoint(11, -1)));
+	BOOST_CHECK(ladder1.MakeLadder() == tTrajectory({ tPoint(0,5), tPoint(5, 0), tPoint(10, 0) }));
+}
+
+BOOST_AUTO_TEST_CASE(segments_sort_test)
+{
+	tSegment segment1(tPoint(0, 0), tPoint(10, 10));
+	tSegment segment2(tPoint(20, 20), tPoint(5, -10));
+	tSegment segment3(tPoint(14, -20), tPoint(-8, 1));
+	tSegment segment4(tPoint(8, 10), tPoint(1, 10));
+	std::list<tSegment> segments{ segment1,segment2,segment3, segment4 };
+	SortSegments(segments);
+	BOOST_CHECK(segments.front() == segment3);
+	BOOST_CHECK(segments.back() == segment4);
+}
 
 BOOST_AUTO_TEST_SUITE_END()

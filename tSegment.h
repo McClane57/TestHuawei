@@ -2,6 +2,7 @@
 #include "tPoint.h"
 #include "limits.h"
 #include <cassert>
+#include <list>
 
 class tSegment
 {
@@ -21,6 +22,7 @@ public:
 	tSegment(tPoint const& s, tPoint const& f, int width = 0) : xStart(s), xFinish(f), xWidth(width) { assert(!(xStart == xFinish) && "Bad segment"); }
 	tSegment(tSegment const& other, int width = 0) :xStart(other.End(0)), xFinish(other.End(1)), xWidth(width) {}
 	tPoint const& End(int end) const { return end ? xFinish : xStart; }
+	bool operator ==(tSegment const& other);
 	bool IsRegular();
 	std::pair<eRegDir, eRegDir> Directions();
 	int Limit(eRegDir dir) const;
@@ -32,4 +34,7 @@ public:
 
 };
 
+
 bool Less(tSegment const& first, tSegment const& second);
+
+void SortSegments(std::list<tSegment>& segments);

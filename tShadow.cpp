@@ -11,6 +11,18 @@ void tLadder::xInit()
 	xShadow = tShadow(Next(xDirections.second), Next(xDirections.first,1,false), xDiagonal.End(1));
 }
 
+void tLadder::AddObstacle(tOctet const& octet)
+{
+	tOctet inflated(octet);
+	inflated.Inflate(xDiagonal.Width());
+	auto real_obst = xFrame.Intersect(&inflated);
+	if (real_obst == nullptr)
+		return;
+	if (xDiagonal.IsPointOnLine(real_obst->Vertex(E)) > 0)
+		return;
+	xShadow.AddObstacle(*real_obst);
+}
+
 tPoint tLadder::LastPointUnderDiagonal(tPoint const& start) const
 {
 	auto lim1_start = xDiagonal.End(0).Limit(Next(xDirections.first,1,false));
